@@ -1,0 +1,402 @@
+<html>
+
+<head>
+    <title>Video Streaming </title>
+    <script type=text/javascript src="{{url_for('static', filename='js/jquery.js') }}"></script>
+    <script type=text/javascript>
+        var roiState = false;
+        $(document).ready(function(){
+            $('#params_form').on('change',function(event){
+                const formRequest = $.ajax({
+                    data: {
+                        binarization: $('#binarization').val(),
+                        brightness: $('#brightness').val(),
+                        minArea: $('#minArea').val(),
+                        maxArea: $('#maxArea').val(),
+                        erosion: $('#erosion').val(),
+                        lineWidth: $('#lineWidth').val()
+                    },
+                    type: 'POST',
+                    url: '/param_change'
+                });
+
+                formRequest.done(function(data){
+                    $('#binarization').val(data.binarization);
+                    $('#brightness').val(data.brightness);
+                    $('#minArea').val(data.minArea)
+                    $('#maxArea').val(data.maxArea)
+                    $('#erosion').val(data.erosion)
+                    $('#lineWidth').val(data.lineWidth)
+
+                });
+                event.preventDefault();//Prevents defadivt form submit method from executing
+            });
+
+            $('#save_btn').on('click',function(event){
+                const saveRequest = $.ajax({
+                    data: {},
+                    type: 'POST',
+                    url: '/param_save'
+                });
+                saveRequest.done(function(data){
+                    alert(data.msg);
+                });
+            });
+
+            $('#reset_btn').on('click',function(event){
+                const resetRequest = $.ajax({
+                    data:{},
+                    type: 'POST',
+                    url: '/counter_reset'
+                });
+                
+                resetRequest.done(function(data){
+                    alert(data.msg);
+                });
+            });
+
+            $('#roi_btn').on('click',function(event){
+                const roiRequest = $.ajax({
+                    data:{},
+                    type: 'POST',
+                    url: '/select_roi'
+                });
+                roiRequest.done(function(){
+                    roiState = true;
+                });
+            });
+        });
+
+    </script>
+</head>
+<style>
+    html > body {
+        margin: 0;
+        padding: 0;
+    }
+    .myCanvas{
+       background-image: url("{{ url_for('video_feed') }}");
+       border-top: 2px solid black;
+       border-bottom: 2px solid black;
+       width: 100%;
+    }
+    .canvasDiv{
+        margin: 0;
+        padding: 0;
+        border: 0;
+        width: 100%;
+    }
+    .canvasDiv > p{
+        margin: 0;
+        text-align: center;
+        font:bold 20px Arial;
+        padding-top:3px;
+        background-color:cornflowerblue;
+    }
+    .floodDiv{
+        margin: 0;
+        width: 100%;
+        border: 0;
+        align-items: center;
+        display: -webkit-flex;
+        -webkit-flex-direction: column;
+     
+        display: flex;
+        flex-direction: column;
+
+        justify-content: space-evenly;
+        align-items: center;
+    }
+    .floodDiv > p{
+        margin:0;
+        width: 100%;
+        padding: 0;
+        padding-top:3px;
+        border-bottom: 2px solid black;
+        text-align: center;
+        font:bold 20px Arial;
+        background-color:cornflowerblue;
+    }
+
+    .videoDiv{
+        margin: 0;
+        padding: 0;
+        border: 2px solid black;
+        align-items: center;
+        display: -webkit-flex;
+        -webkit-flex-direction: column;
+     
+        display: flex;
+        flex-direction:column;
+
+        justify-content:space-evenly;
+        align-items: center;
+    }
+
+    .parametersContainer{
+        width: 33vw;
+        min-width: 325px;
+        height: 55vh;
+        min-height: 348.85px;
+        margin: 0;
+        background-color: transparent;
+        border: 2px solid black;
+        border-radius: 10px;
+    }
+    .params_form{
+        width: 100%;
+        height: 95%;
+        min-height: 298px;
+        background-color: transparent;
+        margin: 0;
+        display: -webkit-flex;
+        -webkit-flex-direction: column;
+     
+        display: flex;
+        flex-direction:column;
+
+        justify-content:space-evenly;
+        align-items: center;
+    }
+    .params_title{
+        background-color:cornflowerblue;
+        text-align: center;
+        width: 100%;
+        height: 5%;
+        min-height: 1.1em;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        margin: 0;
+        padding-top: 3px;
+        font: bold 14px Arial;
+    }
+    .parameterBox{
+        width: 32vw;
+        min-width: 315px;
+        height: 7vh;
+        min-height: 46px;
+        font: bold 15px Arial;
+        border: 1px solid navy;
+        border-radius: 13px;
+        background-color: dodgerblue;
+        display: -webkit-flex;
+        -webkit-flex-direction: row;
+     
+        display: flex;
+        flex-direction: row;
+
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-evenly;
+
+    }
+    .rangeValue{
+        border: 1px solid #555;
+        padding:2px;
+        height: 1rem;
+        text-align:center;
+    }
+    .pageMain{
+        margin:0;
+        margin-top: 3vh;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: -webkit-flex;
+        -webkit-flex-direction: row;
+     
+        display: flex;
+        flex-direction: row;
+
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-evenly;
+
+    }
+    .commandsContainer{
+        width: 100%;
+        min-width: 330px;
+        height: 10%;
+        min-height: 60px;
+        display: -webkit-flex;
+        -webkit-flex-direction: row;
+     
+        display: flex;
+        flex-direction: row;
+
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        
+    }
+    .commandsItem{
+        height: 3rem;
+        margin: 5px;
+        padding: 2px;
+        flex: 1 1 0;
+    }
+    .controlsContainer{
+        border: 0;
+        width: 35vw;
+        min-width: 330px;
+
+        display: -webkit-flex;
+        -webkit-flex-direction: column;
+     
+        display: flex;
+        flex-direction: column;
+
+        flex-wrap: nowrap;
+        align-items: center;
+
+    }
+    .pageHeader{
+        width: 100vw;
+        height: 10vh;
+        background-color: cornflowerblue;
+        border-bottom: 1px solid black;
+    }
+    .pageTitle{
+        font: bold 23px Arial;
+        color: black;
+        text-align: center;
+        padding-top: 3vh;
+    }
+
+</style>
+<body>
+    <div class="pageHeader">
+        <div class="pageTitle">SISTEMA DE VISÃO COMPUTACIONAL</div>
+    </div>
+    <div class="pageMain">
+        <div class="controlsContainer">
+            <div class="parametersContainer">
+                <div class="params_title">PARÂMETROS</div>
+                <form class="params_form" id="params_form">
+                    <div class="parameterBox" id="binRange">
+                        <p>Binarização</p>
+                        <input type="range" min="0" max="255" id="binarization" value={{bin}} oninput="updateBin()">
+                        <p class="rangeValue" id="binValue">{{bin}}</p>
+                    </div>
+                    <div class="parameterBox" id="brightRange">
+                        <p>Brilho</p>
+                        <input type="range" min="0" max="60" id="brightness" value={{bright}} oninput=" updateBrigth()">
+                        <p class="rangeValue" id="brightValue">{{bright}}</p>
+                    </div>
+                    <div class="parameterBox" id="minAreaRange">
+                        <p>Área<br>Mínima</p>
+                        <input type="range" min="0" max="3000" id="minArea" value={{minArea}} oninput="updateMinArea()">
+                        <p class="rangeValue" id="minAreaValue">{{minArea}}</p>
+                    </div>
+                    <div class="parameterBox" id="maxAreaRange">
+                        <p>Área<br>Máxima</p>
+                        <input type="range" min="0" max="100000" id="maxArea" value={{maxArea}} oninput="updateMaxArea()">
+                        <p class="rangeValue" id="maxAreaValue">{{maxArea}}</p>
+                    </div>
+                    <div class="parameterBox" id="eroRange">
+                        <p>Erosão</p>
+                        <input type="range" min="0" max="20" id="erosion" value={{eros}} oninput="updateEro()">
+                        <p class="rangeValue" id="eroValue">{{eros}}</p>
+                    </div>
+                    <div class="parameterBox" id="lineRange">
+                        <p>Largura Linha<br>de Referência</p>
+                        <input type="range" min="2" max="5" id="lineWidth" value={{lineWidth}} oninput="updateLine()">
+                        <p class="rangeValue" id="lineValue">{{lineWidth}}</p>
+                    </div>
+                </form>
+            </div>
+            <div class="commandsContainer">
+                <button class="commandsItem"type="button" id="save_btn">SALVAR</button>
+                <button class="commandsItem"type="button" id="reset_btn">RESETAR<br>CONTADOR</button>
+                <button class="commandsItem"type="button" id="roi_btn">CONFIGURAR<br>R.O.I.</button>
+            </div>
+        </div>
+        <div class="videoDiv">
+            <div class="canvasDiv">
+                <p>VÍDEO AO VIVO</p>
+                <canvas class="myCanvas" id="streamCanvas" height="480" width="600"></canvas>
+            </div>
+            <div class="floodDiv">
+                <p>VÍDEO PÓS-PROCESSADO</p>
+                <img src="{{url_for('flood')}}">
+            </div>
+        </div>
+    </div>
+    <script type=text/javascript>
+        function updateBin(){
+            document.getElementById('binValue').innerHTML = document.getElementById('binarization').value;
+        }
+        function updateBrigth(){
+            document.getElementById('brightValue').innerHTML = document.getElementById('brightness').value;
+        }
+        function updateMinArea(){
+            document.getElementById('minAreaValue').innerHTML = document.getElementById('minArea').value;
+        }
+        function updateMaxArea(){
+            document.getElementById('maxAreaValue').innerHTML = document.getElementById('maxArea').value;
+        }
+        function updateEro(){
+            document.getElementById('eroValue').innerHTML = document.getElementById('erosion').value;
+        }
+        function updateLine(){
+            document.getElementById('lineValue').innerHTML = document.getElementById('lineWidth').value;
+        }
+
+        var canvas = document.getElementById('streamCanvas');
+        var ctx = canvas.getContext('2d');
+        var rect = {};
+        var drag = false;
+
+        function canvasDraw(){
+            ctx.strokeStyle = 'red'
+            ctx.strokeRect(rect.startX, rect.startY, rect.w, rect.h);
+        }
+
+        function canvasInit(){
+            canvas.addEventListener('mousedown',canvasDown);
+            canvas.addEventListener('mouseup',canvasUp);
+            canvas.addEventListener('mousemove',canvasMove);
+        }
+
+        function canvasDown(event){
+            rect.startX = event.pageX - this.offsetLeft;
+            rect.startY = event.pageY - this.offsetTop;
+            if(roiState==true){
+                drag = true;
+            }
+        }
+
+        function canvasUp(){
+            drag = false;
+            if(roiState == true){
+                const cropRequest = $.ajax({
+                    data:{
+                        x:rect.startX,
+                        y:rect.startY,
+                        w:rect.w,
+                        h:rect.h
+                    },
+                    type: 'POST',
+                    url: '/crop_params'
+                });
+                cropRequest.done(function(data){
+                    roiState = false;
+                    location.reload(true);
+                });
+            }
+        }
+
+        function canvasMove(event){
+            if(drag){
+                rect.w = (event.pageX - this.offsetLeft) - rect.startX;
+                rect.h = (event.pageY - this.offsetTop) - rect.startY;
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                canvasDraw();
+            }
+        }
+
+        document.getElementById('roi_btn').onmouseup = canvasInit();
+    </script>
+</body>
+
+</html>
