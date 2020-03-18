@@ -4,7 +4,6 @@ import json
 import os
 import platform
 import threading
-import pickle
 import queue
 
 entradas = 0

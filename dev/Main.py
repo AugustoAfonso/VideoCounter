@@ -2,7 +2,6 @@ import modules.VisionModule  as vision
 from flask import Flask, render_template, request, Response,jsonify,redirect,url_for
 import threading
 import queue
-import pickle
 import cv2
 import os
 import sys
