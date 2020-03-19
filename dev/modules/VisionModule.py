@@ -16,29 +16,38 @@ startup = False
     
 def loadParameters(device=0):
     if platform.system() == 'Linux':
-        path = "/usr/share/"
+        path = os.path.join("","/home/pi/Documents/","MVCounter")
     elif platform.system() == 'Windows':
-        path = "C:/Users/Public/Documents/"
+        path = os.path.join("","C:/Users/Public/Documents/","MVCounter")  
+    if not os.path.exists(path):
+        print("MVCounter folder don't exist")
+        os.mkdir(path)
+        print("Created MVCounter folder")
+    if os.path.exists(path):
+        print("MVCounter folder already exists")
+        if not os.path.exists(os.path.join(path,"parameters.json")):
+            print("Parameters file don't exist")
+            parameters = {
+                "binarization":0,
+                "brightness":0,
+                "minArea":0,
+                "maxArea":0,
+                "erosion":0,
+                "lineWidth":2,
+                "savePath":f"{path}MVcounter/parameters.json",
+                "roi":[50,50,200,200]
+            }
+            file = open(os.path.join(path,"parameters.json"),"w+",encoding="utf-8")
+            print("Created parameters file")
+            json.dump(parameters,file)
+            file.close()
+            path = os.path.join(path,"parameters.json")
+        else:
+            print("Parameters file already exists")
+            path = os.path.join(path,"parameters.json")
     
-    if not os.path.exists(path+"MVCounter"):
-        os.mkdir(path+"MVCounter")
-    
-    if not os.path.exists(path+"MVcounter/parameters.json"):
-        parameters = {
-            "binarization":0,
-            "brightness":0,
-            "minArea":0,
-            "maxArea":0,
-            "erosion":0,
-            "lineWidth":2,
-            "savePath":f"{path}MVcounter/parameters.json",
-            "roi":[50,50,200,200]
-        }
-        file = open(path+"MVcounter/parameters.json","w",encoding="utf-8")
-        json.dump(parameters,file)
-        file.close()
-    else:
-        json_file =  open(path+"MVcounter/parameters.json","r",encoding="utf-8")
+    if os.path.exists(path):
+        json_file =  open(path,"r",encoding="utf-8")
         parameters = json.load(json_file)
         json_file.close()
         global x,y,w,h,startup
@@ -47,7 +56,7 @@ def loadParameters(device=0):
 
     print("Load Done")
     return parameters
-
+    
 
 def saveParameters(parameters):
     try:
@@ -177,3 +186,7 @@ def countObjects(outQ,parameters,device=0):
     yield (b'--frame\r\n'
         b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
     video_capture.release()
+
+
+
+loadParameters()
