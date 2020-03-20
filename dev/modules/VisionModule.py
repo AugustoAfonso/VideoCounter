@@ -186,7 +186,3 @@ def countObjects(outQ,parameters,device=0):
     yield (b'--frame\r\n'
         b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
     video_capture.release()
-
-
-
-loadParameters()
