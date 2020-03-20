@@ -1,5 +1,6 @@
 import modules.VisionModule  as vision
 from flask import Flask, render_template, request, Response,jsonify,redirect,url_for
+from waitress import serve
 import threading
 import queue
 import cv2
@@ -106,4 +107,5 @@ def flood():
     
 
 if __name__ == "__main__":
-    app.run(threaded=True)
+    #app.run(threaded=True)
+    serve(app, host='0.0.0.0', port=80)
