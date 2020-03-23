@@ -8,6 +8,7 @@ import queue
 
 entradas = 0
 roiState = False
+mode = "counter"
 x=0
 y=0
 w=200
@@ -68,7 +69,7 @@ def saveParameters(parameters):
         return False
 
 def countObjects(outQ,parameters,device=0):
-
+    print("OBJECT COUNT ON")
     top = False
     bottom = False
     
@@ -78,9 +79,9 @@ def countObjects(outQ,parameters,device=0):
     primeiroFrame = None
 
     oldCenter = []
-    global entradas,roiState,x,y,w,h
+    global entradas,roiState,x,y,w,h,mode
 
-    while not roiState:
+    while not roiState and mode=="counter":
         binarization = parameters["binarization"]
         brightness = parameters["brightness"]
         minArea = parameters["minArea"]
@@ -178,11 +179,63 @@ def countObjects(outQ,parameters,device=0):
             continue
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+    if mode == "counter":
+        print("CHANGING ROI")
+        (_,image) = video_capture.read()
+        #image = cv2.resize(image,(420,336))
+        (_,encodedImg) = cv2.imencode(".jpg", image)
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+        video_capture.release()
+        roiState = False
+    else:
+        print(f"MODE CHANGED!NOW {mode}")
+        video_capture.release()
 
-    print("CHANGING ROI")
-    (_,image) = video_capture.read()
-    #image = cv2.resize(image,(420,336))
-    (_,encodedImg) = cv2.imencode(".jpg", image)
-    yield (b'--frame\r\n'
-        b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
-    video_capture.release()
+
+def checkPresence(outQ,parameters,device=0):
+    print("PRESENCE CHECK ON")
+    global roiState,x,y,w,h,mode
+
+    video_capture = cv2.VideoCapture(device)
+    video_capture.set(cv2.CAP_PROP_FPS, 60)
+
+    while not roiState and mode=="presence":
+        binarization = parameters["binarization"]
+        brightness = parameters["brightness"]
+        minArea = parameters["minArea"]
+        maxArea = parameters["maxArea"]
+        erosion = parameters["erosion"]
+        lineWidth = parameters["lineWidth"]
+
+        ret, image = video_capture.read()
+        if not ret:
+            break
+
+        video_capture.set(10, brightness)  # brightness
+        # both opencv and numpy are "row-major", so y goes first
+        cropImg = image[y:y+h, x:x+w]
+        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        gray_img = cv2.cvtColor(cropImg, cv2.COLOR_BGR2GRAY)
+        gray_img = cv2.GaussianBlur(gray_img, (15, 15), 0)
+
+        (flag,encodedImg) = cv2.imencode(".jpg", image)
+        (_,processedImgEncoded) = cv2.imencode(".jpg", cropImg)
+        outQ.put(processedImgEncoded)
+        if not flag:
+            continue
+        yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+    if mode == "presence":
+        print("CHANGING ROI")
+        (_,image) = video_capture.read()
+        #image = cv2.resize(image,(420,336))
+        (_,encodedImg) = cv2.imencode(".jpg", image)
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+        video_capture.release()
+        roiState = False
+    else:
+        print(f"MODE CHANGED!NOW {mode}")
+        video_capture.release()
+

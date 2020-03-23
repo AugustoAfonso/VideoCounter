@@ -74,6 +74,12 @@ def select_roi():
     vision.roiState = True
     return jsonify({})
 
+@app.route("/mode_select",methods=["POST"])
+def mode_select():
+    vision.mode = request.form["mode"]
+    print(f"Mode changed:{vision.mode}")
+    return jsonify({})
+
 @app.route("/crop_params",methods=["POST"])
 def crop_params():
     vision.x = int(float(request.form["x"]))
@@ -86,9 +92,12 @@ def crop_params():
 @app.route('/video_feed')
 def video_feed():
     global floodQ,parameters
-    """Video streaming route. Put this in the src attribute of an img tag."""
-    return Response(vision.countObjects(floodQ,parameters),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    if vision.mode == "counter":
+        return Response(vision.countObjects(floodQ,parameters),
+                        mimetype='multipart/x-mixed-replace; boundary=frame')
+    elif vision.mode == "presence":
+        return Response(vision.checkPresence(floodQ,parameters),
+                mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 def floodGen():
@@ -104,8 +113,6 @@ def flood():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-    
-
 if __name__ == "__main__":
     #app.run(threaded=True)
-    serve(app, host='0.0.0.0', port=80)
+    serve(app, host='0.0.0.0', port=80,threads=8)
