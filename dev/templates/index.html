@@ -5,6 +5,7 @@
     <script type=text/javascript src="{{url_for('static', filename='js/jquery.js') }}"></script>
     <script type=text/javascript>
         var roiState = false;
+        var presenceDif = 0;
         $(document).ready(function(){
             $('#params_form').on('change',function(event){
                 const formRequest = $.ajax({
@@ -105,6 +106,29 @@
                 });
             });
 
+            $('#trigger_btn').on('click',function(event){
+                const triggerRequest = $.ajax({
+                    data:{},
+                    type:'POST',
+                    url:'/trigger'
+                });
+                triggerRequest.done(function(){
+                    
+                });
+            });
+
+            function refreshpresenceDif(){
+                const presenceDifRequest = $.ajax({
+                    data:{},
+                    type:'POST',
+                    url:'/presenceDif'
+                });
+                presenceDifRequest.done(function(data){
+                    $('#percentualDifValue').html("DIFERENÇA PERCENTUAL:"+data.value);
+                    $('#percentualDifValue').css("visibility","visible");
+                });
+            };
+            setInterval(refreshpresenceDif,1000);
         });
 
     </script>
@@ -364,6 +388,7 @@
     <div class="pageHeader">
         <div class="pageTitle">SISTEMA DE VISÃO COMPUTACIONAL</div>
     </div>
+    <button type="button" id="trigger_btn">TRIGGER</button>
     <div class="pageMain">
         <div class="controlsContainer">
             <div class="modesContainer">
@@ -422,6 +447,7 @@
             </div>
             <div class="floodDiv">
                 <p>VÍDEO PÓS-PROCESSADO</p>
+                <p id="percentualDifValue" style='visibility:hidden'></p>
                 <img src="{{url_for('flood')}}">
             </div>
         </div>

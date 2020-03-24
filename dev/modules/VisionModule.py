@@ -9,6 +9,8 @@ import queue
 entradas = 0
 roiState = False
 mode = "counter"
+trigger = False
+presenceDifPercentage = 0
 x=0
 y=0
 w=200
@@ -61,7 +63,7 @@ def loadParameters(device=0):
 
 def saveParameters(parameters):
     try:
-        file = open(parameters["savePath"],"w", encoding="utf-8")
+        file = open(parameters["savePath"],"w+", encoding="utf-8")
         json.dump(parameters, file)
         file.close()
         return True
@@ -189,24 +191,22 @@ def countObjects(outQ,parameters,device=0):
         video_capture.release()
         roiState = False
     else:
-        print(f"MODE CHANGED!NOW {mode}")
+        print(f"MODE CHANGED!NOW {mode.upper()}")
         video_capture.release()
 
 
 def checkPresence(outQ,parameters,device=0):
     print("PRESENCE CHECK ON")
-    global roiState,x,y,w,h,mode
+    global roiState,x,y,w,h,mode,trigger,presenceDifPercentage
 
     video_capture = cv2.VideoCapture(device)
     video_capture.set(cv2.CAP_PROP_FPS, 60)
 
+    primeiroFrame = None
+
     while not roiState and mode=="presence":
         binarization = parameters["binarization"]
         brightness = parameters["brightness"]
-        minArea = parameters["minArea"]
-        maxArea = parameters["maxArea"]
-        erosion = parameters["erosion"]
-        lineWidth = parameters["lineWidth"]
 
         ret, image = video_capture.read()
         if not ret:
@@ -217,10 +217,26 @@ def checkPresence(outQ,parameters,device=0):
         cropImg = image[y:y+h, x:x+w]
         cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
         gray_img = cv2.cvtColor(cropImg, cv2.COLOR_BGR2GRAY)
-        gray_img = cv2.GaussianBlur(gray_img, (15, 15), 0)
+        blur_img = cv2.GaussianBlur(gray_img, (15, 15), 0)
+        ret, blur_img = cv2.threshold(blur_img, binarization, 255, cv2.THRESH_BINARY)
+        if primeiroFrame is None:
+            for i in range(10):
+                primeiroFrame = blur_img
+            continue
+        
+        if trigger:
+            primeiroFrame = blur_img
+            trigger = False
+        difImg = cv2.absdiff(primeiroFrame,blur_img)
+        meanFirstImgValue = np.mean(primeiroFrame.flatten())
+        meanBlurValue = np.mean(blur_img.flatten())
+        meanDifImgValue = np.mean(difImg)
+        presenceDifPercentage = (meanDifImgValue*100)/255
+        #print(f"First Mean: {meanFirstImgValue} Blur Mean:{meanBlurValue} Dif Mean: {meanDifImgValue} / {presenceDifPercentage}%")
+
 
         (flag,encodedImg) = cv2.imencode(".jpg", image)
-        (_,processedImgEncoded) = cv2.imencode(".jpg", cropImg)
+        (_,processedImgEncoded) = cv2.imencode(".jpg",  difImg)
         outQ.put(processedImgEncoded)
         if not flag:
             continue
@@ -229,13 +245,12 @@ def checkPresence(outQ,parameters,device=0):
     if mode == "presence":
         print("CHANGING ROI")
         (_,image) = video_capture.read()
-        #image = cv2.resize(image,(420,336))
         (_,encodedImg) = cv2.imencode(".jpg", image)
         yield (b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
         video_capture.release()
         roiState = False
     else:
-        print(f"MODE CHANGED!NOW {mode}")
+        print(f"MODE CHANGED!NOW {mode.upper()}")
         video_capture.release()
 

@@ -80,6 +80,12 @@ def mode_select():
     print(f"Mode changed:{vision.mode}")
     return jsonify({})
 
+@app.route("/trigger",methods=["POST"])
+def trigger():
+    if vision.mode == "presence":
+        vision.trigger = True
+    return jsonify({})
+
 @app.route("/crop_params",methods=["POST"])
 def crop_params():
     vision.x = int(float(request.form["x"]))
@@ -87,6 +93,13 @@ def crop_params():
     vision.w = int(float(request.form["w"]))
     vision.h = int(float(request.form["h"]))
     return jsonify({})
+
+
+#Data Aquisition
+@app.route('/presenceDif',methods=["POST"])
+def presenceDif():
+    print("Presence Dif Request:"+str(vision.presenceDifPercentage))
+    return jsonify({'value':str(vision.presenceDifPercentage)})
 
 #Streaming
 @app.route('/video_feed')
@@ -96,7 +109,7 @@ def video_feed():
         return Response(vision.countObjects(floodQ,parameters),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
     elif vision.mode == "presence":
-        return Response(vision.checkPresence(floodQ,parameters),
+        return Response(vision.checkPresence(floodQ,parameters,device=1),
                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
