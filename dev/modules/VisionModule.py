@@ -19,7 +19,8 @@ startup = False
     
 def loadParameters(device=0):
     if platform.system() == 'Linux':
-        path = os.path.join("","home","pi","Documents","MVCounter")
+        #path = os.path.join("","home","pi","Documents","MVCounter")
+        path = os.path.join("","home",os.getlogin(),"Documents","MVCounter")
     elif platform.system() == 'Windows':
         path = os.path.join("","C:","Users","Public","Documents","MVCounter")  
     if not os.path.exists(path):
