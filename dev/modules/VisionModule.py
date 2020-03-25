@@ -19,15 +19,16 @@ startup = False
     
 def loadParameters(device=0):
     if platform.system() == 'Linux':
-        path = os.path.join("","/home/pi/Documents/","MVCounter")
+        #path = os.path.join("","home","pi","Documents","MVCounter")
+        path = os.path.join("","home",os.getlogin(),"Documents","MVCounter")
     elif platform.system() == 'Windows':
-        path = os.path.join("","C:/Users/Public/Documents/","MVCounter")  
+        path = os.path.join("","C:","Users","Public","Documents","MVCounter")  
     if not os.path.exists(path):
         print("MVCounter folder don't exist")
-        os.mkdir(path)
+        os.makedirs(path)
         print("Created MVCounter folder")
     if os.path.exists(path):
-        print("MVCounter folder already exists")
+        print(f"MVCounter folder already exists at {path}")
         if not os.path.exists(os.path.join(path,"parameters.json")):
             print("Parameters file don't exist")
             parameters = {
@@ -41,13 +42,13 @@ def loadParameters(device=0):
                 "roi":[50,50,200,200]
             }
             file = open(os.path.join(path,"parameters.json"),"w+",encoding="utf-8")
-            print("Created parameters file")
             json.dump(parameters,file)
             file.close()
+            print("Created parameters file")
             path = os.path.join(path,"parameters.json")
         else:
-            print("Parameters file already exists")
             path = os.path.join(path,"parameters.json")
+            print(f"Parameters file already exists at {path}")
     
     if os.path.exists(path):
         json_file =  open(path,"r",encoding="utf-8")
@@ -57,7 +58,7 @@ def loadParameters(device=0):
         if not startup:
             x,y,w,h = parameters["roi"]
 
-    print("Load Done")
+    print(f"Load Done at path:{path}")
     return parameters
     
 
