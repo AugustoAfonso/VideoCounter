@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import modules.VisionModule  as vision
 from flask import Flask, render_template, request, Response,jsonify,redirect,url_for
 from waitress import serve
@@ -98,7 +99,7 @@ def crop_params():
 #Data Aquisition
 @app.route('/presenceDif',methods=["POST"])
 def presenceDif():
-    print("Presence Dif Request:"+str(vision.presenceDifPercentage))
+    #print("Presence Dif Request:"+str(vision.presenceDifPercentage))
     return jsonify({'value':str(vision.presenceDifPercentage)})
 
 #Streaming
@@ -128,4 +129,4 @@ def flood():
 
 if __name__ == "__main__":
     #app.run(threaded=True)
-    serve(app, host='0.0.0.0', port=80,threads=8)
+    serve(app, host='0.0.0.0', port=5555,threads=8)
