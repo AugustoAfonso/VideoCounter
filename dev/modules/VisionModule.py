@@ -11,61 +11,99 @@ roiState = False
 mode = "counter"
 trigger = False
 presenceDifPercentage = 0
+
 x=0
 y=0
 w=200
 h=200
+
+cx=0
+cy=0
+cw=0
+ch=0
+
+px=0
+py=0
+pw=0
+ph=0
+
+rx=0
+ry=0
+rw=0
+rh=0
 startup = False
     
-def loadParameters(device=0):
+def loadParameters():
     if platform.system() == 'Linux':
         #path = os.path.join("","home","pi","Documents","MVCounter")
         path = os.path.join("","home",os.getlogin(),"Documents","MVCounter")
     elif platform.system() == 'Windows':
-        path = os.path.join("","C:","Users","Public","Documents","MVCounter")  
+        path = os.path.join("","C:\\","Users","Public","Documents","MVCounter")  
     if not os.path.exists(path):
         print("MVCounter folder don't exist")
-        os.makedirs(path)
+        os.mkdir(path)
         print("Created MVCounter folder")
     if os.path.exists(path):
         print(f"MVCounter folder already exists at {path}")
         if not os.path.exists(os.path.join(path,"parameters.json")):
             print("Parameters file don't exist")
-            parameters = {
+            parametersCounter = {
                 "binarization":0,
                 "brightness":0,
                 "minArea":0,
                 "maxArea":0,
                 "erosion":0,
                 "lineWidth":2,
-                "savePath":f"{path}MVcounter/parameters.json",
+                "savePath":os.path.join(path,"parameters.json"),
                 "roi":[50,50,200,200]
             }
+            parametersPresence = {
+                "binarization":0,
+                "brightness":0,
+                "savePath":os.path.join(path,"parameters.json"),
+                "roi":[50,50,200,200]
+            }
+            parametersRGB = {
+                "binarization":0,
+                "brightness":0,
+                "savePath":os.path.join(path,"parameters.json"),
+                "roi":[50,50,200,200]
+            }
+            parametersGlobal = {
+                "counter":parametersCounter,
+                "presence":parametersPresence,
+                "rgb":parametersRGB
+            }
             file = open(os.path.join(path,"parameters.json"),"w+",encoding="utf-8")
-            json.dump(parameters,file)
+            json.dump(parametersGlobal,file)
             file.close()
-            print("Created parameters file")
             path = os.path.join(path,"parameters.json")
+            print(f"Created parameters file at {path}")
         else:
             path = os.path.join(path,"parameters.json")
             print(f"Parameters file already exists at {path}")
     
     if os.path.exists(path):
         json_file =  open(path,"r",encoding="utf-8")
-        parameters = json.load(json_file)
+        parametersGlobal = json.load(json_file)
         json_file.close()
-        global x,y,w,h,startup
-        if not startup:
-            x,y,w,h = parameters["roi"]
+        
+        global mode,cx,cy,cw,ch,px,py,ph,pw,rx,ry,rw,rh
+        
+        cx,cy,cw,ch = parametersGlobal["counter"]["roi"]
+        px,py,pw,ph = parametersGlobal["presence"]["roi"]
+        rx,ry,rw,rh = parametersGlobal["rgb"]["roi"]
+        
 
     print(f"Load Done at path:{path}")
-    return parameters
+    return parametersGlobal
     
 
-def saveParameters(parameters):
+def saveParameters(parametersGlobal):
+    global mode
     try:
-        file = open(parameters["savePath"],"w+", encoding="utf-8")
-        json.dump(parameters, file)
+        file = open(parametersGlobal[mode]["savePath"],"w+", encoding="utf-8")
+        json.dump(parametersGlobal, file)
         file.close()
         return True
     except:
@@ -255,3 +293,49 @@ def checkPresence(outQ,parameters,device=0):
         print(f"MODE CHANGED!NOW {mode.upper()}")
         video_capture.release()
 
+def rgbValueCheck(outQ,parameters,device=0):
+    print("RGB CHECK ON")
+    global roiState,x,y,w,h,mode,trigger,presenceDifPercentage
+
+    video_capture = cv2.VideoCapture(device)
+    video_capture.set(cv2.CAP_PROP_FPS, 60)
+
+    primeiroFrame = None
+
+    while not roiState and mode=="rgb":
+        binarization = parameters["binarization"]
+        brightness = parameters["brightness"]
+
+        ret, image = video_capture.read()
+        if not ret:
+            break
+
+        video_capture.set(10, brightness)  # brightness
+        # both opencv and numpy are "row-major", so y goes first
+        cropImg = image[y:y+h, x:x+w]
+        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+        if primeiroFrame is None:
+            for i in range(10):
+                primeiroFrame = cropImg
+            continue
+
+
+        (flag,encodedImg) = cv2.imencode(".jpg", image)
+        (_,processedImgEncoded) = cv2.imencode(".jpg",  cropImg)
+        outQ.put(processedImgEncoded)
+        if not flag:
+            continue
+        yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+    if mode == "rgb":
+        print("CHANGING ROI")
+        (_,image) = video_capture.read()
+        (_,encodedImg) = cv2.imencode(".jpg", image)
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+        video_capture.release()
+        roiState = False
+    else:
+        print(f"MODE CHANGED!NOW {mode.upper()}")
+        video_capture.release()

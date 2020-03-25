@@ -5,6 +5,7 @@
     <script type=text/javascript src="{{url_for('static', filename='js/jquery.js') }}"></script>
     <script type=text/javascript>
         var roiState = false;
+        var presenceDif = 0;
         var mode = "";
         $(document).ready(function(){
             $('#params_form').on('change',function(event){
@@ -12,10 +13,6 @@
                     data: {
                         binarization: $('#binarization').val(),
                         brightness: $('#brightness').val(),
-                        minArea: $('#minArea').val(),
-                        maxArea: $('#maxArea').val(),
-                        erosion: $('#erosion').val(),
-                        lineWidth: $('#lineWidth').val()
                     },
                     type: 'POST',
                     url: '/param_change'
@@ -24,11 +21,6 @@
                 formRequest.done(function(data){
                     $('#binarization').val(data.binarization);
                     $('#brightness').val(data.brightness);
-                    $('#minArea').val(data.minArea)
-                    $('#maxArea').val(data.maxArea)
-                    $('#erosion').val(data.erosion)
-                    $('#lineWidth').val(data.lineWidth)
-
                 });
                 event.preventDefault();//Prevents defadivt form submit method from executing
             });
@@ -94,7 +86,6 @@
                     //location.reload(true);
                     window.location = '/presence';
                     mode = "presence";
-
                 });
             });
 
@@ -417,26 +408,6 @@
                         <input type="range" min="0" max="60" id="brightness" value={{bright}} oninput=" updateBrigth()">
                         <p class="rangeValue" id="brightValue">{{bright}}</p>
                     </div>
-                    <div class="parameterBox" id="minAreaRange">
-                        <p>Área<br>Mínima</p>
-                        <input type="range" min="0" max="3000" id="minArea" value={{minArea}} oninput="updateMinArea()">
-                        <p class="rangeValue" id="minAreaValue">{{minArea}}</p>
-                    </div>
-                    <div class="parameterBox" id="maxAreaRange">
-                        <p>Área<br>Máxima</p>
-                        <input type="range" min="0" max="100000" id="maxArea" value={{maxArea}} oninput="updateMaxArea()">
-                        <p class="rangeValue" id="maxAreaValue">{{maxArea}}</p>
-                    </div>
-                    <div class="parameterBox" id="eroRange">
-                        <p>Erosão</p>
-                        <input type="range" min="0" max="20" id="erosion" value={{eros}} oninput="updateEro()">
-                        <p class="rangeValue" id="eroValue">{{eros}}</p>
-                    </div>
-                    <div class="parameterBox" id="lineRange">
-                        <p>Largura Linha<br>de Referência</p>
-                        <input type="range" min="2" max="5" id="lineWidth" value={{lineWidth}} oninput="updateLine()">
-                        <p class="rangeValue" id="lineValue">{{lineWidth}}</p>
-                    </div>
                 </form>
             </div>
             <div class="commandsContainer">
@@ -463,18 +434,6 @@
         }
         function updateBrigth(){
             document.getElementById('brightValue').innerHTML = document.getElementById('brightness').value;
-        }
-        function updateMinArea(){
-            document.getElementById('minAreaValue').innerHTML = document.getElementById('minArea').value;
-        }
-        function updateMaxArea(){
-            document.getElementById('maxAreaValue').innerHTML = document.getElementById('maxArea').value;
-        }
-        function updateEro(){
-            document.getElementById('eroValue').innerHTML = document.getElementById('erosion').value;
-        }
-        function updateLine(){
-            document.getElementById('lineValue').innerHTML = document.getElementById('lineWidth').value;
         }
 
         var canvas = document.getElementById('streamCanvas');
