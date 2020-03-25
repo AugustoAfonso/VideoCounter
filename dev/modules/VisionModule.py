@@ -19,9 +19,9 @@ startup = False
     
 def loadParameters(device=0):
     if platform.system() == 'Linux':
-        path = os.path.join("","/home/pi/Documents/","MVCounter")
+        path = os.path.join("","home","pi","Documents","MVCounter")
     elif platform.system() == 'Windows':
-        path = os.path.join("","C:/Users/Public/Documents/","MVCounter")  
+        path = os.path.join("","C:","Users","Public","Documents","MVCounter")  
     if not os.path.exists(path):
         print("MVCounter folder don't exist")
         os.mkdir(path)
