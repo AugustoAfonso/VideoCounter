@@ -163,6 +163,9 @@
         padding-top:3px;
         background-color:cornflowerblue;
     }
+    .canvasTitle,.currentMode,.analisisResult{
+        border-bottom: 2px solid black;
+    }
     .floodDiv{
         margin: 0;
         width: 100%;
@@ -447,8 +450,8 @@
         </div>
         <div class="videoDiv">
             <div class="canvasDiv">
-                <p>VÍDEO AO VIVO</p>
-                <p>MODO {{activeMode}}</p>
+                <p class="canvasTitle">VÍDEO AO VIVO</p>
+                <p class="currentMode">MODO {{activeMode}}</p>
                 <canvas class="myCanvas" id="streamCanvas" height="480" width="600"></canvas>
             </div>
             <div class="floodDiv">
