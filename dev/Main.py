@@ -47,7 +47,8 @@ def presence():
     return render_template("presence.html",
                           activeMode=vision.mode,
                           bin=parametersGlobal["presence"]["binarization"],
-                          bright=parametersGlobal["presence"]["brightness"])
+                          bright=parametersGlobal["presence"]["brightness"],
+                          maxDif=parametersGlobal["presence"]["maxDif"])
 
 
 @app.route("/rgb",methods=["GET","POST"])
@@ -83,8 +84,10 @@ def param_change():
         if vision.mode == "presence":
             parametersGlobal["presence"]["binarization"] = int(request.form["binarization"])
             parametersGlobal["presence"]["brightness"] = int(request.form["brightness"])
+            parametersGlobal["presence"]["maxDif"] = int(request.form["maxDif"])
             return jsonify({'binarization': parametersGlobal["presence"]["binarization"],
-                            'brightness': parametersGlobal["presence"]["brightness"]})
+                            'brightness': parametersGlobal["presence"]["brightness"],
+                            'maxDif':parametersGlobal["presence"]["maxDif"]})
         if vision.mode == "rgb":
             parametersGlobal["rgb"]["binarization"] = int(request.form["binarization"])
             parametersGlobal["rgb"]["brightness"] = int(request.form["brightness"])
@@ -144,7 +147,8 @@ def crop_params():
 @app.route('/presenceDif',methods=["POST"])
 def presenceDif():
     #print("Presence Dif Request:"+str(vision.presenceDifPercentage))
-    return jsonify({'value':str(vision.presenceDifPercentage)})
+    return jsonify({'value':str(vision.presenceDifPercentage),
+                    'result':"APROVADO" if vision.approved else "REPROVADO"})
 
 #Streaming
 @app.route('/video_feed')
