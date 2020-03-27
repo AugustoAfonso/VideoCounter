@@ -5,14 +5,13 @@
     <script type=text/javascript src="{{url_for('static', filename='js/jquery.js') }}"></script>
     <script type=text/javascript>
         var roiState = false;
-        var presenceDif = 0;
-        var mode = "";
         $(document).ready(function(){
             $('#params_form').on('change',function(event){
                 const formRequest = $.ajax({
                     data: {
                         binarization: $('#binarization').val(),
                         brightness: $('#brightness').val(),
+                        maxDif: $('#maxDif').val()
                     },
                     type: 'POST',
                     url: '/param_change'
@@ -123,6 +122,7 @@
                 });
                 presenceDifRequest.done(function(data){
                     $('#percentualDifValue').html("DIFERENÇA PERCENTUAL:"+data.value);
+                    $('#analisisResult').html("RESULTADO:"+data.result);
                 });
             };
             var presenceTimer = setInterval(refreshpresenceDif,1000);
@@ -153,6 +153,9 @@
         font:bold 20px Arial;
         padding-top:3px;
         background-color:cornflowerblue;
+    }
+    .canvasTitle,.currentMode,.analisisResult{
+        border-bottom: 2px solid black;
     }
     .floodDiv{
         margin: 0;
@@ -405,8 +408,13 @@
                     </div>
                     <div class="parameterBox" id="brightRange">
                         <p>Brilho</p>
-                        <input type="range" min="0" max="60" id="brightness" value={{bright}} oninput=" updateBrigth()">
+                        <input type="range" min="0" max="100" id="brightness" value={{bright}} oninput="updateBrigth()">
                         <p class="rangeValue" id="brightValue">{{bright}}</p>
+                    </div>
+                    <div class="parameterBox" id="maxDifRange">
+                        <p>Diferença % Máxima</p>
+                        <input type="range" min="0" max="100" id="maxDif" value={{maxDif}} oninput="updateMaxDif()">
+                        <p class="rangeValue" id="maxDifValue">{{maxDif}}</p>
                     </div>
                 </form>
             </div>
@@ -419,8 +427,9 @@
         </div>
         <div class="videoDiv">
             <div class="canvasDiv">
-                <p>VÍDEO AO VIVO</p>
-                <p>MODO {{activeMode}}</p>
+                <p class="canvasTitle">VÍDEO AO VIVO</p>
+                <p class="currentMode">MODO {{activeMode}}</p>
+                <p class="analisisResult" id="analisisResult"></p>
                 <canvas class="myCanvas" id="streamCanvas" height="480" width="600"></canvas>
             </div>
             <div class="floodDiv">
@@ -436,6 +445,9 @@
         }
         function updateBrigth(){
             document.getElementById('brightValue').innerHTML = document.getElementById('brightness').value;
+        }
+        function updateMaxDif(){
+            document.getElementById('maxDifValue').innerHTML = document.getElementById('maxDif').value;
         }
 
         var canvas = document.getElementById('streamCanvas');
