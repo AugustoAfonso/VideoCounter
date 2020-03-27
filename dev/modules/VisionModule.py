@@ -262,16 +262,16 @@ def checkPresence(outQ,parameters,device=0):
             cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
             gray_img = cv2.cvtColor(cropImg, cv2.COLOR_BGR2GRAY)
             blur_img = cv2.GaussianBlur(gray_img, (15, 15), 0)
-            ret, blur_img = cv2.threshold(blur_img, binarization, 255, cv2.THRESH_BINARY)
+            _,thres_img = cv2.threshold(blur_img, binarization, 255, cv2.THRESH_BINARY)
             if primeiroFrame is None:
                 for i in range(10):
-                    primeiroFrame = blur_img
+                    primeiroFrame = thres_img
                 continue
             
             if trigger:
-                primeiroFrame = blur_img
+                primeiroFrame = thres_img
                 trigger = False
-            difImg = cv2.absdiff(primeiroFrame,blur_img)
+            difImg = cv2.absdiff(primeiroFrame,thres_img)
             '''degub
             meanFirstImgValue = np.mean(primeiroFrame.flatten())
             meanBlurValue = np.mean(blur_img.flatten())
