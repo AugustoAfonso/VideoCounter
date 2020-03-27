@@ -30,7 +30,7 @@ def index():
     vision.mode = "counter"
     vision.x,vision.y,vision.w, vision.h = vision.cx,vision.cy,vision.cw, vision.ch
     return render_template("index.html",
-                          activeMode=vision.mode,
+                          activeMode=vision.mode.upper(),
                           bin=parametersGlobal["counter"]["binarization"],
                           bright=parametersGlobal["counter"]["brightness"],
                           minArea=parametersGlobal["counter"]["minArea"],
@@ -45,7 +45,7 @@ def presence():
     vision.x,vision.y,vision.w, vision.h = vision.px,vision.py,vision.pw, vision.ph
     print(f"Mode changed:{vision.mode}")
     return render_template("presence.html",
-                          activeMode=vision.mode,
+                          activeMode=vision.mode.upper(),
                           bin=parametersGlobal["presence"]["binarization"],
                           bright=parametersGlobal["presence"]["brightness"],
                           maxDif=parametersGlobal["presence"]["maxDif"])
@@ -57,7 +57,7 @@ def rgb():
     vision.x,vision.y,vision.w, vision.h = vision.rx,vision.ry,vision.rw, vision.rh
     print(f"Mode changed:{vision.mode}")
     return render_template("rgb.html",
-                          activeMode=vision.mode,
+                          activeMode=vision.mode.upper(),
                           bin=parametersGlobal["rgb"]["binarization"],
                           bright=parametersGlobal["rgb"]["brightness"])
 

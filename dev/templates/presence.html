@@ -123,6 +123,11 @@
                 presenceDifRequest.done(function(data){
                     $('#percentualDifValue').html("DIFERENÇA PERCENTUAL:"+data.value);
                     $('#analisisResult').html("RESULTADO:"+data.result);
+                    if(data.result ==="APROVADO"){
+                        $('#analisisResult').css("color","green");
+                    }else{
+                        $('#analisisResult').css("color","red");;
+                    }
                 });
             };
             var presenceTimer = setInterval(refreshpresenceDif,1000);
