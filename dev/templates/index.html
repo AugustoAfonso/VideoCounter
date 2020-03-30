@@ -124,17 +124,17 @@
                 });
             });
 
-            function refreshpresenceDif(){
-                const presenceDifRequest = $.ajax({
+            function refreshcounterEntrys(){
+                const counterEntrysRequest = $.ajax({
                     data:{},
                     type:'POST',
-                    url:'/presenceDif'
+                    url:'/counterEntrys'
                 });
-                presenceDifRequest.done(function(data){
-                    $('#percentualDifValue').html("DIFERENÇA PERCENTUAL:"+data.value);
+                counterEntrysRequest.done(function(data){
+                    $('#analisisResult').html("ENTRADAS:"+data.value);
                 });
             };
-            //var presenceTimer = setInterval(refreshpresenceDif,1000);
+            var counterTimer = setInterval(refreshcounterEntrys,200);
         });
 
     </script>
@@ -146,7 +146,7 @@
     }
     .myCanvas{
        background-image: url("{{ url_for('video_feed') }}");
-       border-top: 2px solid black;
+       border-top: 0;
        border-bottom: 2px solid black;
        width: 100%;
     }
@@ -452,6 +452,7 @@
             <div class="canvasDiv">
                 <p class="canvasTitle">VÍDEO AO VIVO</p>
                 <p class="currentMode">MODO {{activeMode}}</p>
+                <p class="analisisResult" id="analisisResult">ENTRADAS:0</p>
                 <canvas class="myCanvas" id="streamCanvas" height="480" width="600"></canvas>
             </div>
             <div class="floodDiv">

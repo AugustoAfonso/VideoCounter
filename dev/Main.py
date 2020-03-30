@@ -150,6 +150,10 @@ def presenceDif():
     return jsonify({'value':value,#str(vision.presenceDifPercentage),
                     'result':"APROVADO" if vision.approved else "REPROVADO"})
 
+@app.route('/counterEntrys',methods=["POST"])
+def counterEntrys():
+    return jsonify({'value':str(vision.entradas)})
+
 #Streaming
 @app.route('/video_feed')
 def video_feed():
