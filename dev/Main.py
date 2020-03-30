@@ -18,7 +18,7 @@ if getattr(sys, 'frozen', False):
 else:
     app = Flask(__name__)
 
-#Inicialization
+#Template Routes
 @app.route('/')
 @app.route('/counter',methods=["GET","POST"])
 def index():
@@ -146,8 +146,8 @@ def crop_params():
 #Data Aquisition
 @app.route('/presenceDif',methods=["POST"])
 def presenceDif():
-    #print("Presence Dif Request:"+str(vision.presenceDifPercentage))
-    return jsonify({'value':str(vision.presenceDifPercentage),
+    value = f"{vision.presenceDifPercentage:.2f}"
+    return jsonify({'value':value,#str(vision.presenceDifPercentage),
                     'result':"APROVADO" if vision.approved else "REPROVADO"})
 
 #Streaming

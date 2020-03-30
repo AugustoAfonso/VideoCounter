@@ -256,7 +256,8 @@ def checkPresence(outQ,parameters,device=0):
             if not ret:
                 break
 
-            video_capture.set(10, brightness)  # brightness
+            video_capture.set(10, brightness) # brightness
+            video_capture.set(cv2.CAP_PROP_AUTOFOCUS, 1) #auto-focus 
             # both opencv and numpy are "row-major", so y goes first
             cropImg = image[y:y+h, x:x+w]
             cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
