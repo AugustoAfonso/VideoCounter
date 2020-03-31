@@ -115,7 +115,7 @@
                 });
             });
 
-            function refreshpresenceDif(){
+            /*function refreshpresenceDif(){
                 const presenceDifRequest = $.ajax({
                     data:{},
                     type:'POST',
@@ -125,7 +125,7 @@
                     $('#percentualDifValue').html("DIFERENÇA PERCENTUAL:"+data.value);
                 });
             };
-            //var presenceTimer = setInterval(refreshpresenceDif,1000);
+            //var presenceTimer = setInterval(refreshpresenceDif,1000);*/
         });
 
     </script>
@@ -153,6 +153,9 @@
         font:bold 20px Arial;
         padding-top:3px;
         background-color:cornflowerblue;
+    }
+    .canvasTitle,.currentMode,.analisisResult{
+        border-bottom: 2px solid black;
     }
     .floodDiv{
         margin: 0;
@@ -412,7 +415,6 @@
             </div>
             <div class="commandsContainer">
                 <button class="commandsItem"type="button" id="save_btn">SALVAR</button>
-                <button class="commandsItem"type="button" id="reset_btn">RESETAR<br>CONTADOR</button>
                 <button class="commandsItem"type="button" id="roi_btn">CONFIGURAR<br>R.O.I.</button>
             </div>
         </div>
@@ -420,6 +422,7 @@
             <div class="canvasDiv">
                 <p>VÍDEO AO VIVO</p>
                 <p>MODO {{activeMode}}</p>
+                <p class="analisisResult" id="analisisResult"></p>
                 <canvas class="myCanvas" id="streamCanvas" height="480" width="600"></canvas>
             </div>
             <div class="floodDiv">

@@ -224,18 +224,19 @@ def countObjects(outQ,parameters,device=0):
                     b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
         except cv2.error as e:
             print(f"CV2 Exception Caught!!!")
-            if mode == "counter":
-                print("CHANGING ROI")
-                (_,image) = video_capture.read()
-                #image = cv2.resize(image,(420,336))
-                (_,encodedImg) = cv2.imencode(".jpg", image)
-                yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
-                video_capture.release()
-                roiState = False
-            else:
-                video_capture.release()
-                print(f"MODE CHANGED!NOW {mode.upper()}")
+            break
+    if mode == "counter":
+        print("CHANGING ROI")
+        (_,image) = video_capture.read()
+        #image = cv2.resize(image,(420,336))
+        (_,encodedImg) = cv2.imencode(".jpg", image)
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+        video_capture.release()
+        roiState = False
+    else:
+        video_capture.release()
+        print(f"MODE CHANGED!NOW {mode.upper()}")
 
 
 def checkPresence(outQ,parameters,device=0):
@@ -277,7 +278,7 @@ def checkPresence(outQ,parameters,device=0):
             meanFirstImgValue = np.mean(primeiroFrame.flatten())
             meanBlurValue = np.mean(blur_img.flatten())
             '''
-            meanDifImgValue = np.mean(difImg)
+            meanDifImgValue = np.mean(difImg.flatten())
             presenceDifPercentage = (meanDifImgValue*100)/255
             if presenceDifPercentage >= maxDifference:
                 approved = False
@@ -294,22 +295,23 @@ def checkPresence(outQ,parameters,device=0):
                     b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
         except cv2.error as e:
             print("CV2 Exception Caught!!!")
-            if mode == "presence":
-                print("CHANGING ROI")
-                (_,image) = video_capture.read()
-                (_,encodedImg) = cv2.imencode(".jpg", image)
-                yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
-                video_capture.release()
-                roiState = False
-            else:
-                video_capture.release()
-                print(f"MODE CHANGED!NOW {mode.upper()}")
+            break
+    if mode == "presence":
+        print("CHANGING ROI")
+        (_,image) = video_capture.read()
+        (_,encodedImg) = cv2.imencode(".jpg", image)
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+        video_capture.release()
+        roiState = False
+    else:
+        video_capture.release()
+        print(f"MODE CHANGED!NOW {mode.upper()}")
         
 
 def rgbValueCheck(outQ,parameters,device=0):
     print("RGB CHECK ON")
-    global roiState,x,y,w,h,mode,trigger,presenceDifPercentage
+    global roiState,x,y,w,h,mode,trigger
 
     video_capture = cv2.VideoCapture(device)
     video_capture.set(cv2.CAP_PROP_FPS, 60)
@@ -333,25 +335,38 @@ def rgbValueCheck(outQ,parameters,device=0):
                 for i in range(10):
                     primeiroFrame = cropImg
                 continue
-
-
+            
+            meanRGBImg = np.zeros(cropImg.shape,dtype='uint8')          
+            #B:0 G:1 R:2          
+            meanRGBImg[:,:,0] = np.mean(cropImg[:,:,0])
+            meanRGBImg[:,:,1] = np.mean(cropImg[:,:,1])
+            meanRGBImg[:,:,2] = np.mean(cropImg[:,:,2])
+            blueValue = np.mean(meanRGBImg[:,:,0].flatten())
+            #blueValue = np.mean(cropImg[:,:,0].flatten())
+            greenValue = np.mean(meanRGBImg[:,:,1].flatten())
+            #greenValue = np.mean(cropImg[:,:,1].flatten())
+            redValue = np.mean(meanRGBImg[:,:,2].flatten())
+            #redValue = np.mean(cropImg[:,:,2].flatten())
+            print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
             (flag,encodedImg) = cv2.imencode(".jpg", image)
-            (_,processedImgEncoded) = cv2.imencode(".jpg",  cropImg)
+            (_,processedImgEncoded) = cv2.imencode(".jpg",  meanRGBImg)
             outQ.put(processedImgEncoded)
             if not flag:
                 continue
             yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
         except cv2.error as e:
-            if mode == "rgb":
-                print("CHANGING ROI")
-                (_,image) = video_capture.read()
-                (_,encodedImg) = cv2.imencode(".jpg", image)
-                yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
-                video_capture.release()
-                roiState = False
-            else:
-                video_capture.release()
-                print(f"MODE CHANGED!NOW {mode.upper()}")
+            print("CV2 Exception Caught!!!")
+            break
+    if mode == "rgb":
+        print("CHANGING ROI")
+        (_,image) = video_capture.read()
+        (_,encodedImg) = cv2.imencode(".jpg", image)
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImg) + b'\r\n')
+        video_capture.release()
+        roiState = False
+    else:
+        video_capture.release()
+        print(f"MODE CHANGED!NOW {mode.upper()}")
         
