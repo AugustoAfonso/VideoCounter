@@ -59,7 +59,8 @@ def rgb():
     return render_template("rgb.html",
                           activeMode=vision.mode.upper(),
                           bin=parametersGlobal["rgb"]["binarization"],
-                          bright=parametersGlobal["rgb"]["brightness"])
+                          bright=parametersGlobal["rgb"]["brightness"],
+                          maxRGB=parametersGlobal["rgb"]["maxRGB"])
 
 
 #Buttons,Sliders
@@ -91,8 +92,10 @@ def param_change():
         if vision.mode == "rgb":
             parametersGlobal["rgb"]["binarization"] = int(request.form["binarization"])
             parametersGlobal["rgb"]["brightness"] = int(request.form["brightness"])
+            parametersGlobal["rgb"]["maxRGB"] = request.form["maxRGB"].split(',')
             return jsonify({'binarization': parametersGlobal["rgb"]["binarization"],
-                            'brightness': parametersGlobal["rgb"]["brightness"]})
+                            'brightness': parametersGlobal["rgb"]["brightness"],
+                            'maxRGB': ",".join(parametersGlobal["rgb"]["maxRGB"])})
 
 
 

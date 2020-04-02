@@ -68,6 +68,7 @@ def loadParameters():
             parametersRGB = {
                 "binarization":0,
                 "brightness":0,
+                "maxRGB":"[0,0,0]",
                 "savePath":os.path.join(path,"parameters.json"),
                 "roi":[50,50,200,200]
             }
@@ -347,7 +348,7 @@ def rgbValueCheck(outQ,parameters,device=0):
             #greenValue = np.mean(cropImg[:,:,1].flatten())
             redValue = np.mean(meanRGBImg[:,:,2].flatten())
             #redValue = np.mean(cropImg[:,:,2].flatten())
-            print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
+            #print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
             (flag,encodedImg) = cv2.imencode(".jpg", image)
             (_,processedImgEncoded) = cv2.imencode(".jpg",  meanRGBImg)
             outQ.put(processedImgEncoded)

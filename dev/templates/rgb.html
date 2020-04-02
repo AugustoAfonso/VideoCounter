@@ -7,12 +7,14 @@
         var roiState = false;
         var presenceDif = 0;
         var mode = "";
+        var maxRGB = [];
         $(document).ready(function(){
             $('#params_form').on('change',function(event){
                 const formRequest = $.ajax({
                     data: {
                         binarization: $('#binarization').val(),
                         brightness: $('#brightness').val(),
+                        maxRGB: maxRGB
                     },
                     type: 'POST',
                     url: '/param_change'
@@ -21,6 +23,7 @@
                 formRequest.done(function(data){
                     $('#binarization').val(data.binarization);
                     $('#brightness').val(data.brightness);
+                    $('#maxColorDisplay').html(data.maxRGB);
                 });
                 event.preventDefault();//Prevents defadivt form submit method from executing
             });
@@ -411,6 +414,11 @@
                         <input type="range" min="0" max="100" id="brightness" value={{bright}} oninput=" updateBrigth()">
                         <p class="rangeValue" id="brightValue">{{bright}}</p>
                     </div>
+                    <div class="parameterBox" id="maxColor">
+                        <p>Cor Máxima</p>
+                        <input type="color" id="cPicker">
+                        <p id="maxColorDisplay"></p>
+                    </div>
                 </form>
             </div>
             <div class="commandsContainer">
@@ -438,6 +446,25 @@
         function updateBrigth(){
             document.getElementById('brightValue').innerHTML = document.getElementById('brightness').value;
         }
+        var colorInput = document.getElementById('cPicker');
+        var colorDisplay = document.getElementById('maxColorDisplay');
+        maxRGB = ['{{maxRGB[0]}}','{{maxRGB[1]}}','{{maxRGB[2]}}'];
+        colorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
+        colorDisplay.innerHTML = maxRGB.join(',');
+        var rr = parseInt(maxRGB[0],10).toString(16);
+        var gg = parseInt(maxRGB[1],10).toString(16);
+        var bb = parseInt(maxRGB[2],10).toString(16);
+        colorInput.value = '#' + (rr==="0" ? "00":rr) + (gg==="0" ? "00":gg) + (bb==="0" ? "00":bb); 
+        colorInput.addEventListener('input',()=>{
+            let hexColor = colorInput.value.toString();
+            hexColor = hexColor.substring(1);
+            let maxR = parseInt(hexColor.substring(0,2),16);
+            let maxG = parseInt(hexColor.substring(2,4),16);
+            let maxB = parseInt(hexColor.substring(4),16); 
+            colorDisplay.style.backgroundColor = 'rgb('+[maxR,maxG,maxB].join(',')+')';
+            maxRGB =[maxR,maxG,maxB].join(',');
+            colorDisplay.innerHTML = maxRGB;
+        });
 
         var canvas = document.getElementById('streamCanvas');
         var ctx = canvas.getContext('2d');
