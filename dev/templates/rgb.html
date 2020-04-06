@@ -118,17 +118,28 @@
                 });
             });
 
-            /*function refreshpresenceDif(){
-                const presenceDifRequest = $.ajax({
+            $('#rgb_btn').on('click',function(event){
+                $('#rgbControls').css("display","inherit");
+            });
+
+            function refreshRGB(){
+                const currentRGBRequest = $.ajax({
                     data:{},
                     type:'POST',
-                    url:'/presenceDif'
+                    url:'/currentRGB'
                 });
-                presenceDifRequest.done(function(data){
-                    $('#percentualDifValue').html("DIFERENÇA PERCENTUAL:"+data.value);
+                currentRGBRequest.done(function(data){
+                    $('#currentRGB').html("R:"+data.r+" G:"+data.g+" B:"+data.b);
+                    $('#analisisResult').html("RESULTADO:"+data.result);
+                    if(data.result ==="APROVADO"){
+                        $('#analisisResult').css("color","green");
+                    }else{
+                        $('#analisisResult').css("color","red");;
+                    }
                 });
+
             };
-            //var presenceTimer = setInterval(refreshpresenceDif,1000);*/
+            var rgbTimer = setInterval(refreshRGB,1000);
         });
 
     </script>
@@ -415,15 +426,18 @@
                         <p class="rangeValue" id="brightValue">{{bright}}</p>
                     </div>
                     <div class="parameterBox" id="maxColor">
-                        <p>Cor Máxima</p>
-                        <input type="color" id="cPicker">
+                        <p>Cor de Referência</p>
                         <p id="maxColorDisplay"></p>
+                    </div>
+                    <div class="parameterBox" id="rgbControls" style="display: none;">
+
                     </div>
                 </form>
             </div>
             <div class="commandsContainer">
                 <button class="commandsItem"type="button" id="save_btn">SALVAR</button>
                 <button class="commandsItem"type="button" id="roi_btn">CONFIGURAR<br>R.O.I.</button>
+                <button class="commandsItem"type="button" id="rgb_btn">CONFIGURAR<br>RGB</button>
             </div>
         </div>
         <div class="videoDiv">
@@ -435,6 +449,7 @@
             </div>
             <div class="floodDiv">
                 <p>VÍDEO PÓS-PROCESSADO</p>
+                <p id="currentRGB"></p>
                 <img src="{{url_for('flood')}}">
             </div>
         </div>
@@ -446,12 +461,12 @@
         function updateBrigth(){
             document.getElementById('brightValue').innerHTML = document.getElementById('brightness').value;
         }
-        var colorInput = document.getElementById('cPicker');
+        //var colorInput = document.getElementById('cPicker');
         var colorDisplay = document.getElementById('maxColorDisplay');
         maxRGB = ['{{maxRGB[0]}}','{{maxRGB[1]}}','{{maxRGB[2]}}'];
         colorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
         colorDisplay.innerHTML = maxRGB.join(',');
-        var rr = parseInt(maxRGB[0],10).toString(16);
+        /*var rr = parseInt(maxRGB[0],10).toString(16);
         var gg = parseInt(maxRGB[1],10).toString(16);
         var bb = parseInt(maxRGB[2],10).toString(16);
         colorInput.value = '#' + (rr==="0" ? "00":rr) + (gg==="0" ? "00":gg) + (bb==="0" ? "00":bb); 
@@ -464,7 +479,7 @@
             colorDisplay.style.backgroundColor = 'rgb('+[maxR,maxG,maxB].join(',')+')';
             maxRGB =[maxR,maxG,maxB].join(',');
             colorDisplay.innerHTML = maxRGB;
-        });
+        });*/
 
         var canvas = document.getElementById('streamCanvas');
         var ctx = canvas.getContext('2d');

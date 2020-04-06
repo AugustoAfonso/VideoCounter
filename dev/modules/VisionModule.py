@@ -12,6 +12,9 @@ mode = "counter"
 approved = None
 trigger = False
 presenceDifPercentage = 0
+blueValue = 0
+greenValue = 0
+redValue = 0
 
 x=0
 y=0
@@ -316,12 +319,12 @@ def rgbValueCheck(outQ,parameters,device=0):
 
     video_capture = cv2.VideoCapture(device)
     video_capture.set(cv2.CAP_PROP_FPS, 60)
-
-    primeiroFrame = None
+    video_capture.set(cv2.CAP_PROP_AUTO_WB,False)
 
     while not roiState and mode=="rgb":
         binarization = parameters["binarization"]
         brightness = parameters["brightness"]
+        maxR,maxG,maxB = parameters["maxRGB"]
         try:
             ret, image = video_capture.read()
             if not ret:
@@ -330,25 +333,21 @@ def rgbValueCheck(outQ,parameters,device=0):
             video_capture.set(10, brightness)  # brightness
             # both opencv and numpy are "row-major", so y goes first
             cropImg = image[y:y+h, x:x+w]
-            cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-            if primeiroFrame is None:
-                for i in range(10):
-                    primeiroFrame = cropImg
-                continue
+            cv2.rectangle(image, (x-2, y-2), (x+w+2, y+h+2), (0, 255, 0), 2)
             
             meanRGBImg = np.zeros(cropImg.shape,dtype='uint8')          
             #B:0 G:1 R:2          
             meanRGBImg[:,:,0] = np.mean(cropImg[:,:,0])
             meanRGBImg[:,:,1] = np.mean(cropImg[:,:,1])
             meanRGBImg[:,:,2] = np.mean(cropImg[:,:,2])
+            global blueValue,greenValue,redValue,approved
             blueValue = np.mean(meanRGBImg[:,:,0].flatten())
-            #blueValue = np.mean(cropImg[:,:,0].flatten())
             greenValue = np.mean(meanRGBImg[:,:,1].flatten())
-            #greenValue = np.mean(cropImg[:,:,1].flatten())
             redValue = np.mean(meanRGBImg[:,:,2].flatten())
-            #redValue = np.mean(cropImg[:,:,2].flatten())
-            #print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
+            approved = True if (abs(blueValue - int(maxB)) <=15) else False
+            approved = True if (abs(greenValue - int(maxG)) <=15) else False
+            approved = True if (abs(redValue - int(maxR)) <=15) else False
+            print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
             (flag,encodedImg) = cv2.imencode(".jpg", image)
             (_,processedImgEncoded) = cv2.imencode(".jpg",  meanRGBImg)
             outQ.put(processedImgEncoded)

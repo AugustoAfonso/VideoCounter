@@ -157,6 +157,17 @@ def presenceDif():
 def counterEntrys():
     return jsonify({'value':str(vision.entradas)})
 
+@app.route('/currentRGB',methods=["POST"])
+def currentRGB():
+    redValue = f"{vision.redValue:.0f}"
+    greenValue = f"{vision.greenValue:.0f}"
+    blueValue = f"{vision.blueValue:.0f}"
+    return jsonify({'r':redValue,
+                    'g':greenValue,
+                    'b':blueValue,
+                    'result':"APROVADO" if vision.approved else "REPROVADO"})
+
+
 #Streaming
 @app.route('/video_feed')
 def video_feed():
