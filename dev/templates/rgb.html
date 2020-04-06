@@ -8,22 +8,27 @@
         var presenceDif = 0;
         var mode = "";
         var maxRGB = [];
+        var minRGB=[];
+        var refRGB=[];
+        var saveColor = false;
         $(document).ready(function(){
             $('#params_form').on('change',function(event){
                 const formRequest = $.ajax({
                     data: {
-                        binarization: $('#binarization').val(),
                         brightness: $('#brightness').val(),
-                        maxRGB: maxRGB
+                        maxRGB: maxRGB.join(","),
+                        minRGB: minRGB.join(","),
+                        refRGB: refRGB.join(",")
                     },
                     type: 'POST',
                     url: '/param_change'
                 });
 
                 formRequest.done(function(data){
-                    $('#binarization').val(data.binarization);
                     $('#brightness').val(data.brightness);
                     $('#maxColorDisplay').html(data.maxRGB);
+                    $('#minColorDisplay').html(data.minRGB);
+                    $('#refColorDisplay').html(data.refRGB);
                 });
                 event.preventDefault();//Prevents defadivt form submit method from executing
             });
@@ -119,8 +124,17 @@
             });
 
             $('#rgb_btn').on('click',function(event){
-                $('#rgbControls').css("display","inherit");
+                $('#rBox').css("display","flex");
+                $('#rBox').addClass("parameterBox");
+                $('#gBox').css("display","flex");
+                $('#gBox').addClass("parameterBox");
+                $('#bBox').css("display","flex");
+                $('#bBox').addClass("parameterBox");
             });
+
+            $('#saveColor_btn').on('click',function(event){
+                saveColor = true;
+            });            
 
             function refreshRGB(){
                 const currentRGBRequest = $.ajax({
@@ -130,6 +144,13 @@
                 });
                 currentRGBRequest.done(function(data){
                     $('#currentRGB').html("R:"+data.r+" G:"+data.g+" B:"+data.b);
+                    if(saveColor === true){
+                        refRGB = [data.r,data.g,data.b];
+                        refcolorDisplay.style.backgroundColor = 'rgb('+refRGB.join(',')+')';
+                        refcolorDisplay.innerHTML = refRGB;
+                        $('#params_form').trigger("change");
+                        saveColor = false;
+                    }
                     $('#analisisResult').html("RESULTADO:"+data.result);
                     if(data.result ==="APROVADO"){
                         $('#analisisResult').css("color","green");
@@ -274,6 +295,7 @@
         padding:2px;
         height: 1rem;
         text-align:center;
+        min-width: 1rem;
     }
     .pageMain{
         margin:0;
@@ -396,6 +418,36 @@
         text-align: center;
         padding-top: 3vh;
     }
+    .colorBox{
+        display: -webkit-flex;
+        -webkit-flex-direction: column;
+     
+        display: flex;
+        flex-direction: column;
+
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content:space-around;
+        width: 30%;
+        height: 90%;
+        border: 1px solid black;
+    }
+    .colorBox > p{
+        height: 1em;
+        padding: 0;
+        margin: 0;
+    }
+    .colorDisplay{
+        color: white;
+        width: 80%;
+        height: 40%;
+        border: 2px solid black;
+        text-align: center;
+        padding-top: 15px;
+    }
+    #colorContainer{
+        height: 15vh;
+    }
 
 </style>
 <body>
@@ -415,22 +467,48 @@
             <div class="parametersContainer">
                 <div class="params_title">PARÂMETROS</div>
                 <form class="params_form" id="params_form">
-                    <div class="parameterBox" id="binRange">
-                        <p>Binarização</p>
-                        <input type="range" min="0" max="255" id="binarization" value={{bin}} oninput="updateBin()">
-                        <p class="rangeValue" id="binValue">{{bin}}</p>
-                    </div>
                     <div class="parameterBox" id="brightRange">
                         <p>Brilho</p>
                         <input type="range" min="0" max="100" id="brightness" value={{bright}} oninput=" updateBrigth()">
                         <p class="rangeValue" id="brightValue">{{bright}}</p>
                     </div>
-                    <div class="parameterBox" id="maxColor">
-                        <p>Cor de Referência</p>
-                        <p id="maxColorDisplay"></p>
+                    <div class="parameterBox" id="colorContainer">
+                        <div class="colorBox" id="maxColor">
+                            <p>MAX</p>
+                            <div class="colorDisplay" id="maxColorDisplay" ></div>
+                        </div>
+                        <div class="colorBox" id="minColor">
+                            <p>MIN</p>
+                            <div class="colorDisplay" id="minColorDisplay" ></div>
+                        </div>
+                        <div class="colorBox" id="refColor">
+                            <p>REF</p>
+                            <div class="colorDisplay" id="refColorDisplay" ></div>
+                        </div> 
                     </div>
-                    <div class="parameterBox" id="rgbControls" style="display: none;">
-
+                    <div id="rBox" style="display: none;">
+                        R Max.
+                        <input type="range" min="0" max="255" id="maxR"  value={{maxRGB[0]}} oninput="updateMaxR()">
+                        <p class="rangeValue" id="maxRValue">{{maxRGB[0]}}</p>
+                        R Min.
+                        <input type="range" min="0" max="255" id="minR" value={{minRGB[0]}} oninput="updateMinR()">
+                        <p class="rangeValue" id="minRValue">{{minRGB[0]}}</p>
+                    </div>
+                    <div id="gBox" style="display: none;">
+                        G Max.
+                        <input type="range" min="0" max="255" id="maxG" value={{maxRGB[1]}} oninput="updateMaxG()">
+                        <p class="rangeValue" id="maxGValue">{{maxRGB[1]}}</p>
+                        G Min.
+                        <input type="range" min="0" max="255" id="minG" value={{minRGB[1]}} oninput="updateMinG()">
+                        <p class="rangeValue" id="minGValue">{{minRGB[1]}}</p>
+                    </div>
+                    <div id="bBox" style="display: none;">
+                        B Max.
+                        <input type="range" min="0" max="255" id="maxB" value={{maxRGB[2]}} oninput="updateMaxB()">
+                        <p class="rangeValue" id="maxBValue">{{maxRGB[2]}}</p>
+                        B Min.
+                        <input type="range" min="0" max="255" id="minB" value={{minRGB[2]}} oninput="updateMinB()">
+                        <p class="rangeValue" id="minBValue">{{minRGB[2]}}</p>
                     </div>
                 </form>
             </div>
@@ -438,6 +516,7 @@
                 <button class="commandsItem"type="button" id="save_btn">SALVAR</button>
                 <button class="commandsItem"type="button" id="roi_btn">CONFIGURAR<br>R.O.I.</button>
                 <button class="commandsItem"type="button" id="rgb_btn">CONFIGURAR<br>RGB</button>
+                <button class="commandsItem"type="button" id="saveColor_btn">ALTERAR<br>COR REFERÊNCIA</button>
             </div>
         </div>
         <div class="videoDiv">
@@ -455,31 +534,63 @@
         </div>
     </div>
     <script type=text/javascript>
-        function updateBin(){
-            document.getElementById('binValue').innerHTML = document.getElementById('binarization').value;
-        }
         function updateBrigth(){
             document.getElementById('brightValue').innerHTML = document.getElementById('brightness').value;
         }
-        //var colorInput = document.getElementById('cPicker');
-        var colorDisplay = document.getElementById('maxColorDisplay');
+        var maxcolorDisplay = document.getElementById('maxColorDisplay');
         maxRGB = ['{{maxRGB[0]}}','{{maxRGB[1]}}','{{maxRGB[2]}}'];
-        colorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
-        colorDisplay.innerHTML = maxRGB.join(',');
-        /*var rr = parseInt(maxRGB[0],10).toString(16);
-        var gg = parseInt(maxRGB[1],10).toString(16);
-        var bb = parseInt(maxRGB[2],10).toString(16);
-        colorInput.value = '#' + (rr==="0" ? "00":rr) + (gg==="0" ? "00":gg) + (bb==="0" ? "00":bb); 
-        colorInput.addEventListener('input',()=>{
-            let hexColor = colorInput.value.toString();
-            hexColor = hexColor.substring(1);
-            let maxR = parseInt(hexColor.substring(0,2),16);
-            let maxG = parseInt(hexColor.substring(2,4),16);
-            let maxB = parseInt(hexColor.substring(4),16); 
-            colorDisplay.style.backgroundColor = 'rgb('+[maxR,maxG,maxB].join(',')+')';
-            maxRGB =[maxR,maxG,maxB].join(',');
-            colorDisplay.innerHTML = maxRGB;
-        });*/
+        maxcolorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
+        maxcolorDisplay.innerHTML = maxRGB.join(',');
+        var mincolorDisplay = document.getElementById('minColorDisplay');
+        minRGB = ['{{minRGB[0]}}','{{minRGB[1]}}','{{minRGB[2]}}'];
+        mincolorDisplay.style.backgroundColor = 'rgb('+ minRGB.join(',')+')';
+        mincolorDisplay.innerHTML = minRGB.join(',');
+        var refcolorDisplay = document.getElementById('refColorDisplay');
+        refRGB = ['{{refRGB[0]}}','{{refRGB[1]}}','{{refRGB[2]}}'];
+        refcolorDisplay.style.backgroundColor = 'rgb('+ refRGB.join(',')+')';
+        refcolorDisplay.innerHTML = refRGB.join(',');
+        function updateMaxR(){
+            let valR = document.getElementById('maxR').value;
+            document.getElementById('maxRValue').innerHTML = valR;
+            maxRGB[0] = valR;
+            maxcolorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
+            maxcolorDisplay.innerHTML = maxRGB.join(',');
+        }
+        function updateMinR(){
+            let valR = document.getElementById('minR').value;
+            document.getElementById('minRValue').innerHTML = valR;
+            minRGB[0] = valR;
+            mincolorDisplay.style.backgroundColor = 'rgb('+ minRGB.join(',')+')';
+            mincolorDisplay.innerHTML = minRGB.join(',');
+        }
+        function updateMaxG(){
+            let valG = document.getElementById('maxG').value;
+            document.getElementById('maxGValue').innerHTML = valG;
+            maxRGB[1] = valG;
+            maxcolorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
+            maxcolorDisplay.innerHTML = maxRGB.join(',');
+        }
+        function updateMinG(){
+            let valG = document.getElementById('minG').value;
+            document.getElementById('minGValue').innerHTML = valG;
+            minRGB[1] = valG;
+            mincolorDisplay.style.backgroundColor = 'rgb('+ minRGB.join(',')+')';
+            mincolorDisplay.innerHTML = minRGB.join(',');
+        }
+        function updateMaxB(){
+            let valB = document.getElementById('maxB').value;
+            document.getElementById('maxBValue').innerHTML = valB;
+            maxRGB[2] = valB;
+            maxcolorDisplay.style.backgroundColor = 'rgb('+ maxRGB.join(',')+')';
+            maxcolorDisplay.innerHTML = maxRGB.join(',');
+        }
+        function updateMinB(){
+            let valB = document.getElementById('minB').value;
+            document.getElementById('minBValue').innerHTML = valB;
+            minRGB[2] = valB;
+            mincolorDisplay.style.backgroundColor = 'rgb('+ minRGB.join(',')+')';
+            mincolorDisplay.innerHTML = minRGB.join(',');
+        }        
 
         var canvas = document.getElementById('streamCanvas');
         var ctx = canvas.getContext('2d');

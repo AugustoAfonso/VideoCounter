@@ -58,9 +58,10 @@ def rgb():
     print(f"Mode changed:{vision.mode}")
     return render_template("rgb.html",
                           activeMode=vision.mode.upper(),
-                          bin=parametersGlobal["rgb"]["binarization"],
                           bright=parametersGlobal["rgb"]["brightness"],
-                          maxRGB=parametersGlobal["rgb"]["maxRGB"])
+                          maxRGB=parametersGlobal["rgb"]["maxRGB"],
+                          minRGB=parametersGlobal["rgb"]["minRGB"],
+                          refRGB=parametersGlobal["rgb"]["refRGB"])
 
 
 #Buttons,Sliders
@@ -90,12 +91,15 @@ def param_change():
                             'brightness': parametersGlobal["presence"]["brightness"],
                             'maxDif':parametersGlobal["presence"]["maxDif"]})
         if vision.mode == "rgb":
-            parametersGlobal["rgb"]["binarization"] = int(request.form["binarization"])
             parametersGlobal["rgb"]["brightness"] = int(request.form["brightness"])
-            parametersGlobal["rgb"]["maxRGB"] = request.form["maxRGB"].split(',')
-            return jsonify({'binarization': parametersGlobal["rgb"]["binarization"],
-                            'brightness': parametersGlobal["rgb"]["brightness"],
-                            'maxRGB': ",".join(parametersGlobal["rgb"]["maxRGB"])})
+            parametersGlobal["rgb"]["maxRGB"] = [int(n) for n in request.form["maxRGB"].split(",")]
+            parametersGlobal["rgb"]["minRGB"] = [int(n) for n in request.form["minRGB"].split(",")]
+            parametersGlobal["rgb"]["refRGB"] = [int(n) for n in request.form["refRGB"].split(",")]
+            return jsonify({'brightness': parametersGlobal["rgb"]["brightness"],
+                            'maxRGB':",".join([str(n) for n in parametersGlobal["rgb"]["maxRGB"]]),
+                            'minRGB':",".join([str(n) for n in parametersGlobal["rgb"]["minRGB"]]),
+                            'refRGB':",".join([str(n) for n in parametersGlobal["rgb"]["refRGB"]])
+                            })
 
 
 

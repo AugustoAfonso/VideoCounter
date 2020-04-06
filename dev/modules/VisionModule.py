@@ -69,9 +69,10 @@ def loadParameters():
                 "roi":[50,50,200,200]
             }
             parametersRGB = {
-                "binarization":0,
                 "brightness":0,
-                "maxRGB":"[0,0,0]",
+                "maxRGB":[0,0,0],
+                "minRGB":[0,0,0],
+                "refRGB":[0,0,0],
                 "savePath":os.path.join(path,"parameters.json"),
                 "roi":[50,50,200,200]
             }
@@ -322,9 +323,9 @@ def rgbValueCheck(outQ,parameters,device=0):
     video_capture.set(cv2.CAP_PROP_AUTO_WB,False)
 
     while not roiState and mode=="rgb":
-        binarization = parameters["binarization"]
         brightness = parameters["brightness"]
         maxR,maxG,maxB = parameters["maxRGB"]
+        minR,minG,minB = parameters["minRGB"]
         try:
             ret, image = video_capture.read()
             if not ret:
@@ -344,10 +345,10 @@ def rgbValueCheck(outQ,parameters,device=0):
             blueValue = np.mean(meanRGBImg[:,:,0].flatten())
             greenValue = np.mean(meanRGBImg[:,:,1].flatten())
             redValue = np.mean(meanRGBImg[:,:,2].flatten())
-            approved = True if (abs(blueValue - int(maxB)) <=15) else False
-            approved = True if (abs(greenValue - int(maxG)) <=15) else False
-            approved = True if (abs(redValue - int(maxR)) <=15) else False
-            print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
+            approved = True if (blueValue <= maxB and blueValue >= minB) else False
+            approved = True if (greenValue <= maxG and greenValue >= minG) else False
+            approved = True if (redValue <= maxR and redValue >= minR) else False
+            #print(f"BGR:{blueValue:.0f},{greenValue:.0f},{redValue:.0f}")
             (flag,encodedImg) = cv2.imencode(".jpg", image)
             (_,processedImgEncoded) = cv2.imencode(".jpg",  meanRGBImg)
             outQ.put(processedImgEncoded)
