@@ -41,6 +41,12 @@
                 });
                 saveRequest.done(function(data){
                     alert(data.msg);
+                    $('#rBox').removeClass("parameterBox");
+                    $('#rBox').css("display","none");
+                    $('#gBox').removeClass("parameterBox");
+                    $('#gBox').css("display","none");
+                    $('#bBox').removeClass("parameterBox");
+                    $('#bBox').css("display","none");
                 });
             });
 
@@ -146,8 +152,30 @@
                     $('#currentRGB').html("R:"+data.r+" G:"+data.g+" B:"+data.b);
                     if(saveColor === true){
                         refRGB = [data.r,data.g,data.b];
+
+                        document.getElementById('maxR').value = data.r;
+                        document.getElementById('maxRValue').innerHTML = data.r;
+                        document.getElementById('minR').value = data.r;
+                        document.getElementById('minRValue').innerHTML = data.r;
+                        document.getElementById('maxG').value = data.g;
+                        document.getElementById('maxGValue').innerHTML = data.g;
+                        document.getElementById('minG').value = data.g;
+                        document.getElementById('minGValue').innerHTML = data.g;
+                        document.getElementById('maxB').value = data.b;
+                        document.getElementById('maxBValue').innerHTML = data.b;
+                        document.getElementById('minB').value = data.b;
+                        document.getElementById('minBValue').innerHTML = data.b;
+
                         refcolorDisplay.style.backgroundColor = 'rgb('+refRGB.join(',')+')';
-                        refcolorDisplay.innerHTML = refRGB;
+                        refcolorDisplay.innerHTML = refRGB.join(',');
+                        maxcolorDisplay.style.backgroundColor = 'rgb('+refRGB.join(',')+')';
+                        maxcolorDisplay.innerHTML = refRGB.join(',');
+                        mincolorDisplay.style.backgroundColor = 'rgb('+refRGB.join(',')+')';
+                        mincolorDisplay.innerHTML = refRGB.join(',');
+
+                        maxRGB = [data.r,data.g,data.b];
+                        minRGB = [data.r,data.g,data.b];
+
                         $('#params_form').trigger("change");
                         saveColor = false;
                     }
@@ -160,7 +188,7 @@
                 });
 
             };
-            var rgbTimer = setInterval(refreshRGB,1000);
+            var rgbTimer = setInterval(refreshRGB,500);
         });
 
     </script>
@@ -521,8 +549,8 @@
         </div>
         <div class="videoDiv">
             <div class="canvasDiv">
-                <p>VÍDEO AO VIVO</p>
-                <p>MODO {{activeMode}}</p>
+                <p class="canvasTitle">VÍDEO AO VIVO</p>
+                <p class="currentMode">MODO {{activeMode}}</p>
                 <p class="analisisResult" id="analisisResult"></p>
                 <canvas class="myCanvas" id="streamCanvas" height="480" width="600"></canvas>
             </div>
